@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@/utils/supabase/server";
 import { Nav } from "@/app/components/Nav";
 import { NewCustomerForm } from "./new-customer-form";
 import { StatusBadge } from "./status-badge";

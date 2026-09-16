@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@/utils/supabase/server";
 import { Nav } from "@/app/components/Nav";
 import { NewFollowUpForm } from "./new-follow-up-form";
 import { FollowUpRow } from "./follow-up-row";

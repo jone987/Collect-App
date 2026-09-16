@@ -1,7 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@/utils/supabase/server";
 
 function readCredentials(formData: FormData) {
   const email = String(formData.get("email") ?? "").trim();

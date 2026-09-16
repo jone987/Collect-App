@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@/utils/supabase/server";
 import type { CustomerStatus, FollowUpStatus } from "@/types/database";
 
 export async function createCustomer(formData: FormData) {
