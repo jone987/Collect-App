@@ -4,8 +4,9 @@ A small Next.js + Supabase SaaS for tracking who owes you money and following up
 
 ## Stack
 
-- Next.js 14 (App Router) + TypeScript + Tailwind CSS
+- Next.js 15 (App Router) + TypeScript + Tailwind CSS
 - Supabase (Auth + Postgres) via `@supabase/ssr`
+- Zod for form validation
 
 ## Setup
 
@@ -49,6 +50,35 @@ read, insert, update, or delete their own rows.
 ## Pages
 
 - `/login` — email/password sign in and sign up.
-- `/customers` — list of customers with a form to add new ones.
+- `/dashboard` — money outstanding, follow-ups due today, overdue
+  follow-ups, and a "needs attention" list linking straight to the
+  relevant customers.
+- `/customers` — searchable, filterable customer list with an "Add
+  customer" dialog.
 - `/customers/[id]` — customer detail, status editing, and follow-up
   management.
+- `/follow-ups` — every follow-up across all customers, filterable by
+  overdue / due today / pending / done / skipped.
+
+## Code layout
+
+- `lib/data/*` — server-only data-access functions (one file per
+  resource: `customers`, `follow-ups`, plus `dashboard` which combines
+  both). Pages call these instead of touching Supabase directly.
+- `lib/validation/*` — Zod schemas shared between client-side error
+  display and server-side enforcement in the matching `actions.ts`.
+- `lib/format.ts` — currency/date formatting and due-date helpers
+  (`isOverdue`, `isDueToday`) shared by the dashboard, customer detail,
+  and follow-ups pages.
+- `components/ui/*` — presentational primitives (`Button`, `Field`
+  wrappers, `Badge`, `Card`/`StatCard`, `Dialog`, `ConfirmDialog`,
+  `EmptyState`, `Skeleton`, `Alert`, `RouteError`) used across all
+  screens for a consistent look.
+- `app/(app)/*` — the authenticated screens, sharing one layout (`nav`
+  + page chrome). Each route has a `loading.tsx` skeleton and an
+  `error.tsx` boundary alongside its `page.tsx`.
+- Forms use React's `useActionState` + `useFormStatus`: server actions
+  return a typed `FormState` (`lib/form-state.ts`) with field-level
+  Zod errors, and `SubmitButton` shows a pending state automatically.
+- Deletes go through `components/ui/confirm-dialog.tsx`, a reusable
+  confirmation modal — no bare `window.confirm()`.
