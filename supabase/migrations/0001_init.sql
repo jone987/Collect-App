@@ -2,8 +2,17 @@
 
 create extension if not exists "pgcrypto";
 
-create type customer_status as enum ('active', 'overdue', 'paid', 'closed');
-create type follow_up_status as enum ('pending', 'done', 'skipped');
+do $$ begin
+  create type customer_status as enum ('active', 'overdue', 'paid', 'closed');
+exception
+  when duplicate_object then null;
+end $$;
+
+do $$ begin
+  create type follow_up_status as enum ('pending', 'done', 'skipped');
+exception
+  when duplicate_object then null;
+end $$;
 
 create table if not exists customers (
   id uuid primary key default gen_random_uuid(),
@@ -35,36 +44,44 @@ create index if not exists follow_ups_customer_id_idx on follow_ups (customer_id
 alter table customers enable row level security;
 alter table follow_ups enable row level security;
 
+drop policy if exists "Users can view their own customers" on customers;
 create policy "Users can view their own customers"
   on customers for select
   using (auth.uid() = user_id);
 
+drop policy if exists "Users can insert their own customers" on customers;
 create policy "Users can insert their own customers"
   on customers for insert
   with check (auth.uid() = user_id);
 
+drop policy if exists "Users can update their own customers" on customers;
 create policy "Users can update their own customers"
   on customers for update
   using (auth.uid() = user_id)
   with check (auth.uid() = user_id);
 
+drop policy if exists "Users can delete their own customers" on customers;
 create policy "Users can delete their own customers"
   on customers for delete
   using (auth.uid() = user_id);
 
+drop policy if exists "Users can view their own follow ups" on follow_ups;
 create policy "Users can view their own follow ups"
   on follow_ups for select
   using (auth.uid() = user_id);
 
+drop policy if exists "Users can insert their own follow ups" on follow_ups;
 create policy "Users can insert their own follow ups"
   on follow_ups for insert
   with check (auth.uid() = user_id);
 
+drop policy if exists "Users can update their own follow ups" on follow_ups;
 create policy "Users can update their own follow ups"
   on follow_ups for update
   using (auth.uid() = user_id)
   with check (auth.uid() = user_id);
 
+drop policy if exists "Users can delete their own follow ups" on follow_ups;
 create policy "Users can delete their own follow ups"
   on follow_ups for delete
   using (auth.uid() = user_id);
