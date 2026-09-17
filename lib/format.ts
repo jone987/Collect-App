@@ -19,9 +19,19 @@ export function formatDate(value: string | null): string {
   return dateFormatter.format(new Date(`${value}T00:00:00`));
 }
 
-/** Today's date as YYYY-MM-DD, matching how Postgres `date` columns compare. */
+/** Today's date as YYYY-MM-DD, in the viewer's local calendar day — matching
+ * what a person actually means by "today" (and what they typed into a plain
+ * `<input type="date">`). Deliberately uses local getters, not
+ * `toISOString()`: that converts to UTC, which silently rolls over to the
+ * next (or previous) calendar day for hours at a time on any device that
+ * isn't in the UTC timezone, throwing every overdue calculation off by a
+ * day for large parts of the day. */
 export function todayISODate(): string {
-  return new Date().toISOString().slice(0, 10);
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
 }
 
 export function isOverdue(dueDate: string | null, status: string): boolean {
