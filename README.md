@@ -60,6 +60,18 @@ read, insert, update, or delete their own rows.
 - `/follow-ups` — every follow-up across all customers, filterable by
   overdue / due today / pending / done / skipped.
 
+Every pending follow-up (on the dashboard, a customer's page, and the
+follow-ups list) has a **Message** action: it drafts a collections
+message from one of three templates (friendly / firm / formal),
+auto-selected by days overdue (1–5 / 6–13 / 14+), with merge fields
+filled from the customer's real data. You can switch templates, edit
+the text, then send via **Text** (opens the phone's SMS app, handling
+the iOS/Android `sms:` URI difference), **Email** (opens the default
+mail app), or **Copy** as a fallback. The app looks for a phone number
+or email address in the customer's free-text `contact` field; if it
+can't find either, Text/Email still open with no recipient pre-filled
+rather than being disabled.
+
 ## Code layout
 
 - `lib/data/*` — server-only data-access functions (one file per
@@ -82,3 +94,15 @@ read, insert, update, or delete their own rows.
   Zod errors, and `SubmitButton` shows a pending state automatically.
 - Deletes go through `components/ui/confirm-dialog.tsx`, a reusable
   confirmation modal — no bare `window.confirm()`.
+- `lib/message-templates.ts` holds the three message templates, tone
+  selection by days overdue, and merge-field rendering.
+  `lib/contact-links.ts` builds the `sms:`/`mailto:` links (including
+  the iOS-vs-Android `sms:` query-separator difference) and does
+  best-effort phone/email detection against the single `contact`
+  field. `components/message-draft-dialog.tsx` is the dialog UI, used
+  from the dashboard, customer detail, and follow-ups screens alike.
+- The primary nav is a top bar with inline links on `sm:` and up, and
+  a fixed bottom tab bar on mobile (thumb-reachable, no scrolled-off
+  destinations) — this app is meant to be used mostly on a phone in
+  the field. Tables scroll horizontally within their own card on
+  narrow screens rather than overflowing the page.

@@ -31,3 +31,15 @@ export function isOverdue(dueDate: string | null, status: string): boolean {
 export function isDueToday(dueDate: string | null, status: string): boolean {
   return status === "pending" && dueDate === todayISODate();
 }
+
+function toUTCDayNumber(isoDate: string): number {
+  const [year, month, day] = isoDate.split("-").map(Number);
+  return Date.UTC(year, month - 1, day) / 86_400_000;
+}
+
+/** Days between `dueDate` and today, clamped to 0 for dates that aren't past yet. */
+export function daysOverdue(dueDate: string | null): number {
+  if (!dueDate) return 0;
+  const diff = toUTCDayNumber(todayISODate()) - toUTCDayNumber(dueDate);
+  return Math.max(0, Math.round(diff));
+}

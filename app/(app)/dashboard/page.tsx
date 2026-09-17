@@ -4,6 +4,7 @@ import { formatCurrency, formatDate, isOverdue } from "@/lib/format";
 import { StatCard } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/empty-state";
+import { DraftMessageDialog } from "@/components/message-draft-dialog";
 
 export default async function DashboardPage() {
   const { customerStats, followUpStats, attentionFollowUps } =
@@ -56,54 +57,66 @@ export default async function DashboardPage() {
               description="You're all caught up on follow-ups."
             />
           ) : (
-            <table className="w-full text-left text-sm">
-              <thead className="bg-gray-50 text-xs uppercase text-gray-500">
-                <tr>
-                  <th className="px-4 py-3">Customer</th>
-                  <th className="px-4 py-3">Reason</th>
-                  <th className="px-4 py-3">Due date</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {attentionFollowUps.map((followUp) => {
-                  const overdue = isOverdue(
-                    followUp.due_date,
-                    followUp.status
-                  );
-                  return (
-                    <tr key={followUp.id} className="hover:bg-gray-50">
-                      <td className="px-4 py-3">
-                        <Link
-                          href={`/customers/${followUp.customer_id}`}
-                          className="font-medium text-gray-900 hover:underline"
-                        >
-                          {followUp.customerName}
-                        </Link>
-                      </td>
-                      <td className="px-4 py-3 text-gray-600">
-                        {followUp.reason}
-                      </td>
-                      <td className="px-4 py-3">
-                        <span
-                          className={
-                            overdue
-                              ? "font-medium text-red-600"
-                              : "text-gray-600"
-                          }
-                        >
-                          {formatDate(followUp.due_date)}
-                        </span>
-                        {overdue && (
-                          <span className="ml-2">
-                            <Badge tone="red">Overdue</Badge>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm">
+                <thead className="bg-gray-50 text-xs uppercase text-gray-500">
+                  <tr>
+                    <th className="px-4 py-3">Customer</th>
+                    <th className="px-4 py-3">Reason</th>
+                    <th className="px-4 py-3">Due date</th>
+                    <th className="px-4 py-3" />
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {attentionFollowUps.map((followUp) => {
+                    const overdue = isOverdue(
+                      followUp.due_date,
+                      followUp.status
+                    );
+                    return (
+                      <tr key={followUp.id} className="hover:bg-gray-50">
+                        <td className="px-4 py-3">
+                          <Link
+                            href={`/customers/${followUp.customer_id}`}
+                            className="font-medium text-gray-900 hover:underline"
+                          >
+                            {followUp.customerName}
+                          </Link>
+                        </td>
+                        <td className="px-4 py-3 text-gray-600">
+                          {followUp.reason}
+                        </td>
+                        <td className="px-4 py-3">
+                          <span
+                            className={
+                              overdue
+                                ? "font-medium text-red-600"
+                                : "text-gray-600"
+                            }
+                          >
+                            {formatDate(followUp.due_date)}
                           </span>
-                        )}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                          {overdue && (
+                            <span className="ml-2">
+                              <Badge tone="red">Overdue</Badge>
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-4 py-3 text-right">
+                          <DraftMessageDialog
+                            customerName={followUp.customerName}
+                            customerJob={followUp.customerJob}
+                            amountOwed={followUp.customerAmountOwed}
+                            contact={followUp.customerContact}
+                            dueDate={followUp.due_date}
+                          />
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
           )}
         </div>
       </div>

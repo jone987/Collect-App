@@ -18,6 +18,24 @@ const SIZE_CLASSES: Record<ButtonSize, string> = {
   md: "px-3.5 py-2 text-sm",
 };
 
+export function buttonClassName({
+  variant = "primary",
+  size = "md",
+  className = "",
+}: {
+  variant?: ButtonVariant;
+  size?: ButtonSize;
+  className?: string;
+} = {}) {
+  return [
+    "inline-flex items-center justify-center gap-1.5 rounded-md font-medium transition-colors",
+    "disabled:cursor-not-allowed disabled:opacity-60",
+    VARIANT_CLASSES[variant],
+    SIZE_CLASSES[size],
+    className,
+  ].join(" ");
+}
+
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant;
   size?: ButtonSize;
@@ -31,13 +49,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     return (
       <button
         ref={ref}
-        className={[
-          "inline-flex items-center justify-center gap-1.5 rounded-md font-medium transition-colors",
-          "disabled:cursor-not-allowed disabled:opacity-60",
-          VARIANT_CLASSES[variant],
-          SIZE_CLASSES[size],
-          className,
-        ].join(" ")}
+        className={buttonClassName({ variant, size, className })}
         {...props}
       />
     );

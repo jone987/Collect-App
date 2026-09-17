@@ -40,26 +40,30 @@ export function CustomerFilters() {
   }, [search]);
 
   return (
-    <div className="flex items-center gap-3">
+    <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
       <Input
         placeholder="Search by name…"
         value={search}
         onChange={(event) => setSearch(event.target.value)}
-        className="max-w-xs"
+        className="sm:max-w-xs"
       />
-      <Select
-        defaultValue={searchParams.get("status") ?? "all"}
-        onChange={(event) => updateParams({ status: event.target.value })}
-        className="w-auto"
-      >
-        <option value="all">All statuses</option>
-        {CUSTOMER_STATUSES.map((status) => (
-          <option key={status} value={status}>
-            {status[0].toUpperCase() + status.slice(1)}
-          </option>
-        ))}
-      </Select>
-      {isPending && <span className="text-xs text-gray-400">Filtering…</span>}
+      <div className="flex items-center gap-3">
+        <Select
+          defaultValue={searchParams.get("status") ?? "all"}
+          onChange={(event) => updateParams({ status: event.target.value })}
+          className="w-auto"
+        >
+          <option value="all">All statuses</option>
+          {CUSTOMER_STATUSES.map((status) => (
+            <option key={status} value={status}>
+              {status[0].toUpperCase() + status.slice(1)}
+            </option>
+          ))}
+        </Select>
+        {isPending && (
+          <span className="text-xs text-gray-400">Filtering…</span>
+        )}
+      </div>
     </div>
   );
 }

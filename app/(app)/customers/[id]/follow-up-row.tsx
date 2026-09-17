@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { Select } from "@/components/ui/field";
 import { Badge, FollowUpStatusBadge } from "@/components/ui/badge";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { DraftMessageDialog } from "@/components/message-draft-dialog";
 import { formatDate, isOverdue } from "@/lib/format";
 import { FOLLOW_UP_STATUSES } from "@/lib/validation/follow-up";
 import type { FollowUpStatus } from "@/types/database";
@@ -18,7 +19,20 @@ interface FollowUp {
   notes: string | null;
 }
 
-export function FollowUpRow({ followUp }: { followUp: FollowUp }) {
+interface CustomerSummary {
+  name: string;
+  job: string | null;
+  amount_owed: number;
+  contact: string | null;
+}
+
+export function FollowUpRow({
+  followUp,
+  customer,
+}: {
+  followUp: FollowUp;
+  customer: CustomerSummary;
+}) {
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const overdue = isOverdue(followUp.due_date, followUp.status);
@@ -70,20 +84,31 @@ export function FollowUpRow({ followUp }: { followUp: FollowUp }) {
         )}
       </td>
       <td className="px-4 py-3 text-gray-600">{followUp.notes ?? "—"}</td>
-      <td className="px-4 py-3 text-right">
-        <ConfirmDialog
-          trigger={(open) => (
-            <button
-              onClick={open}
-              className="text-xs text-red-600 hover:underline"
-            >
-              Delete
-            </button>
+      <td className="px-4 py-3">
+        <div className="flex items-center justify-end gap-3">
+          {followUp.status === "pending" && (
+            <DraftMessageDialog
+              customerName={customer.name}
+              customerJob={customer.job}
+              amountOwed={customer.amount_owed}
+              contact={customer.contact}
+              dueDate={followUp.due_date}
+            />
           )}
-          title="Delete follow-up?"
-          description="This permanently removes this follow-up. This can't be undone."
-          onConfirm={() => deleteFollowUp(followUp.id, followUp.customer_id)}
-        />
+          <ConfirmDialog
+            trigger={(open) => (
+              <button
+                onClick={open}
+                className="text-xs text-red-600 hover:underline"
+              >
+                Delete
+              </button>
+            )}
+            title="Delete follow-up?"
+            description="This permanently removes this follow-up. This can't be undone."
+            onConfirm={() => deleteFollowUp(followUp.id, followUp.customer_id)}
+          />
+        </div>
       </td>
     </tr>
   );

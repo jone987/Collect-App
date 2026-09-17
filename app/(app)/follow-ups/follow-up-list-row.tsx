@@ -5,6 +5,7 @@ import { useState, useTransition } from "react";
 import { Select } from "@/components/ui/field";
 import { Badge, FollowUpStatusBadge } from "@/components/ui/badge";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { DraftMessageDialog } from "@/components/message-draft-dialog";
 import { formatDate, isOverdue } from "@/lib/format";
 import { FOLLOW_UP_STATUSES } from "@/lib/validation/follow-up";
 import type { FollowUpStatus } from "@/types/database";
@@ -74,20 +75,31 @@ export function FollowUpListRow({
           </p>
         )}
       </td>
-      <td className="px-4 py-3 text-right">
-        <ConfirmDialog
-          trigger={(open) => (
-            <button
-              onClick={open}
-              className="text-xs text-red-600 hover:underline"
-            >
-              Delete
-            </button>
+      <td className="px-4 py-3">
+        <div className="flex items-center justify-end gap-3">
+          {followUp.status === "pending" && (
+            <DraftMessageDialog
+              customerName={followUp.customerName}
+              customerJob={followUp.customerJob}
+              amountOwed={followUp.customerAmountOwed}
+              contact={followUp.customerContact}
+              dueDate={followUp.due_date}
+            />
           )}
-          title="Delete follow-up?"
-          description="This permanently removes this follow-up. This can't be undone."
-          onConfirm={() => deleteFollowUp(followUp.id, followUp.customer_id)}
-        />
+          <ConfirmDialog
+            trigger={(open) => (
+              <button
+                onClick={open}
+                className="text-xs text-red-600 hover:underline"
+              >
+                Delete
+              </button>
+            )}
+            title="Delete follow-up?"
+            description="This permanently removes this follow-up. This can't be undone."
+            onConfirm={() => deleteFollowUp(followUp.id, followUp.customer_id)}
+          />
+        </div>
       </td>
     </tr>
   );

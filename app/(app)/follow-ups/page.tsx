@@ -42,22 +42,24 @@ export default async function FollowUpsPage({
             description="Add follow-ups from a customer's page to see them show up here."
           />
         ) : (
-          <table className="w-full text-left text-sm">
-            <thead className="bg-gray-50 text-xs uppercase text-gray-500">
-              <tr>
-                <th className="px-4 py-3">Customer</th>
-                <th className="px-4 py-3">Reason</th>
-                <th className="px-4 py-3">Due date</th>
-                <th className="px-4 py-3">Status</th>
-                <th className="px-4 py-3" />
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-              {followUps.map((followUp) => (
-                <FollowUpListRow key={followUp.id} followUp={followUp} />
-              ))}
-            </tbody>
-          </table>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm">
+              <thead className="bg-gray-50 text-xs uppercase text-gray-500">
+                <tr>
+                  <th className="px-4 py-3">Customer</th>
+                  <th className="px-4 py-3">Reason</th>
+                  <th className="px-4 py-3">Due date</th>
+                  <th className="px-4 py-3">Status</th>
+                  <th className="px-4 py-3" />
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {followUps.map((followUp) => (
+                  <FollowUpListRow key={followUp.id} followUp={followUp} />
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
     </div>

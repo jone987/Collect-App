@@ -30,9 +30,9 @@ export const Dialog = forwardRef<DialogHandle, DialogProps>(function Dialog(
       onClick={(event) => {
         if (event.target === dialogRef.current) dialogRef.current?.close();
       }}
-      className="w-full max-w-md rounded-lg border border-gray-200 p-0 shadow-lg backdrop:bg-gray-900/40"
+      className="w-[calc(100%-2rem)] max-w-md rounded-lg border border-gray-200 p-0 shadow-lg backdrop:bg-gray-900/40"
     >
-      <div className="p-6">
+      <div className="max-h-[calc(100vh-4rem)] overflow-y-auto p-5 sm:p-6">
         <h2 className="text-lg font-semibold text-gray-900">{title}</h2>
         {description && (
           <p className="mt-1 text-sm text-gray-500">{description}</p>

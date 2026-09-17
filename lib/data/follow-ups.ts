@@ -29,6 +29,9 @@ export interface FollowUpWithCustomer {
   notes: string | null;
   created_at: string;
   customerName: string;
+  customerJob: string | null;
+  customerAmountOwed: number;
+  customerContact: string | null;
 }
 
 export async function getFollowUps(
@@ -63,19 +66,25 @@ export async function getFollowUps(
   );
   const { data: customers, error: customersError } = await supabase
     .from("customers")
-    .select("id, name")
+    .select("id, name, job, amount_owed, contact")
     .in("id", customerIds);
 
   if (customersError) throw new Error(customersError.message);
 
-  const nameById = new Map(
-    (customers ?? []).map((customer) => [customer.id, customer.name])
+  const customerById = new Map(
+    (customers ?? []).map((customer) => [customer.id, customer])
   );
 
-  return followUps.map((followUp) => ({
-    ...followUp,
-    customerName: nameById.get(followUp.customer_id) ?? "Unknown customer",
-  }));
+  return followUps.map((followUp) => {
+    const customer = customerById.get(followUp.customer_id);
+    return {
+      ...followUp,
+      customerName: customer?.name ?? "Unknown customer",
+      customerJob: customer?.job ?? null,
+      customerAmountOwed: customer ? Number(customer.amount_owed) : 0,
+      customerContact: customer?.contact ?? null,
+    };
+  });
 }
 
 export async function getFollowUpsForCustomer(customerId: string) {

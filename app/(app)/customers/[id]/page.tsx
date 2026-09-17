@@ -29,8 +29,8 @@ export default async function CustomerDetailPage({
         ← Back to customers
       </Link>
 
-      <div className="rounded-lg border border-gray-200 bg-white p-6">
-        <div className="flex items-start justify-between gap-4">
+      <div className="rounded-lg border border-gray-200 bg-white p-4 sm:p-6">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <h1 className="text-xl font-semibold">{customer.name}</h1>
             <p className="text-sm text-gray-500">
@@ -79,22 +79,28 @@ export default async function CustomerDetailPage({
                 description="Add one above to schedule your next touchpoint with this customer."
               />
             ) : (
-              <table className="w-full text-left text-sm">
-                <thead className="bg-gray-50 text-xs uppercase text-gray-500">
-                  <tr>
-                    <th className="px-4 py-3">Reason</th>
-                    <th className="px-4 py-3">Due date</th>
-                    <th className="px-4 py-3">Status</th>
-                    <th className="px-4 py-3">Notes</th>
-                    <th className="px-4 py-3" />
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {followUps.map((followUp) => (
-                    <FollowUpRow key={followUp.id} followUp={followUp} />
-                  ))}
-                </tbody>
-              </table>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-sm">
+                  <thead className="bg-gray-50 text-xs uppercase text-gray-500">
+                    <tr>
+                      <th className="px-4 py-3">Reason</th>
+                      <th className="px-4 py-3">Due date</th>
+                      <th className="px-4 py-3">Status</th>
+                      <th className="px-4 py-3">Notes</th>
+                      <th className="px-4 py-3" />
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {followUps.map((followUp) => (
+                      <FollowUpRow
+                        key={followUp.id}
+                        followUp={followUp}
+                        customer={customer}
+                      />
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             )}
           </div>
         </div>
