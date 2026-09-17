@@ -11,12 +11,8 @@ export const followUpSchema = z.object({
   due_date: z
     .string()
     .trim()
-    .optional()
-    .or(z.literal(""))
-    .refine(
-      (value) => !value || !Number.isNaN(Date.parse(value)),
-      "Enter a valid date."
-    ),
+    .min(1, "Due date is required.")
+    .refine((value) => !Number.isNaN(Date.parse(value)), "Enter a valid date."),
   status: z.enum(FOLLOW_UP_STATUSES, {
     errorMap: () => ({ message: "Choose a valid status." }),
   }),

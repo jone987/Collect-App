@@ -13,7 +13,21 @@ export function formatCurrency(amount: number): string {
   return currencyFormatter.format(amount);
 }
 
-/** `value` is a `date` column value (YYYY-MM-DD), not a full timestamp. */
+/** `value` is a `date` column value (YYYY-MM-DD), not a full timestamp.
+ *
+ * This and the due-date helpers below deliberately keep accepting
+ * `string | null` even though `follow_ups.due_date` is now NOT NULL end to
+ * end (DB constraint + required Zod validation + required form field — see
+ * migration 0002 and lib/validation/follow-up.ts). TypeScript's types are a
+ * compile-time contract, not a runtime guarantee: a row saved before that
+ * constraint existed, or written by something outside this app entirely,
+ * could still hand these functions a null at runtime no matter what the
+ * type says. These are the lowest-level functions where that data enters
+ * the app's date math, so this is where a defensive null check is cheapest
+ * and most valuable — one guard here beats every caller re-deriving the
+ * same guess. Everywhere else in the app, `due_date` is typed as a plain
+ * `string`, so callers get a real compile error if they try to treat it as
+ * possibly missing. */
 export function formatDate(value: string | null): string {
   if (!value) return "—";
   return dateFormatter.format(new Date(`${value}T00:00:00`));

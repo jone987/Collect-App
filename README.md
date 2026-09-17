@@ -11,10 +11,15 @@ A small Next.js + Supabase SaaS for tracking who owes you money and following up
 ## Setup
 
 1. Create a Supabase project at https://supabase.com.
-2. Run the SQL in `supabase/migrations/0001_init.sql` in the Supabase SQL editor
-   (or via the Supabase CLI: `supabase db push`). This creates the `customers`
-   and `follow_ups` tables with row-level security so each user only sees
-   their own data.
+2. Run the SQL in `supabase/migrations/0001_init.sql`, then
+   `supabase/migrations/0002_follow_ups_due_date_required.sql`, in the
+   Supabase SQL editor, in that order (or via the Supabase CLI:
+   `supabase db push`, which applies them in order automatically). The
+   first creates the `customers` and `follow_ups` tables with row-level
+   security so each user only sees their own data; the second makes
+   `follow_ups.due_date` `NOT NULL` (backfilling any existing rows to
+   their creation date first, so it's safe to run on a database that
+   already has data).
 3. In your Supabase project, under Authentication → Providers, make sure
    Email is enabled. For local dev you can disable "Confirm email" to skip
    the email step, or configure an SMTP provider to receive confirmation
@@ -41,7 +46,9 @@ A small Next.js + Supabase SaaS for tracking who owes you money and following up
 - **customers**: `name`, `contact`, `job`, `amount_owed`, `status`
   (`active` / `overdue` / `paid` / `closed`), `notes`. Scoped to the
   authenticated user via `user_id`.
-- **follow_ups**: linked to a `customer_id`, with `reason`, `due_date`,
+- **follow_ups**: linked to a `customer_id`, with `reason`, `due_date`
+  (required — `NOT NULL` at the DB level, enforced end to end; see
+  `supabase/migrations/0002_follow_ups_due_date_required.sql`),
   `status` (`pending` / `done` / `skipped`), `notes`.
 
 Both tables have row-level security policies so a signed-in user can only
@@ -106,3 +113,29 @@ rather than being disabled.
   destinations) — this app is meant to be used mostly on a phone in
   the field. Tables scroll horizontally within their own card on
   narrow screens rather than overflowing the page.
+
+## Testing
+
+```bash
+npm test
+```
+
+Runs the Vitest suite (`lib/format.test.ts`, `lib/message-templates.test.ts`)
+covering the follow-up tier-selection logic: the exact boundary days (0, 1,
+5, 6, 13, 14) that decide friendly vs. firm vs. formal, plus the missing-field
+message-template regressions. These pin the system clock rather than
+depending on whatever day the suite happens to run, and are built to be
+timezone-independent (they compute their own reference date via local `Date`
+getters rather than assuming a specific timezone) — see the comments in
+`lib/format.test.ts` for why that distinction matters here specifically.
+
+## Data integrity
+
+Required fields are enforced at every layer, not just the UI — a field that
+must exist (customer `name`/`amount_owed`/`status`, follow-up
+`reason`/`due_date`/`status`) is `NOT NULL` in the database, required in its
+Zod schema (not just `.optional()` with a UI hint), and `required` on the
+actual form input, so bad data is rejected before it's ever written rather
+than tolerated and guessed around later. Fields that are genuinely optional
+by nature (`contact`, `job`, `notes`) stay nullable throughout and are
+`null`-checked wherever they're displayed or merged into text.

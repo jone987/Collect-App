@@ -46,7 +46,9 @@ export interface Database {
           user_id: string;
           customer_id: string;
           reason: string;
-          due_date: string | null;
+          // Enforced NOT NULL at the DB level (migration 0002) — every row
+          // genuinely has a due date, so this isn't `| null`.
+          due_date: string;
           status: FollowUpStatus;
           notes: string | null;
           created_at: string;
@@ -56,7 +58,7 @@ export interface Database {
           user_id?: string;
           customer_id: string;
           reason: string;
-          due_date?: string | null;
+          due_date: string;
           status?: FollowUpStatus;
           notes?: string | null;
           created_at?: string;
@@ -66,7 +68,7 @@ export interface Database {
           user_id?: string;
           customer_id?: string;
           reason?: string;
-          due_date?: string | null;
+          due_date?: string;
           status?: FollowUpStatus;
           notes?: string | null;
           created_at?: string;

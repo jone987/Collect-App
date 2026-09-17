@@ -24,7 +24,7 @@ export interface FollowUpWithCustomer {
   id: string;
   customer_id: string;
   reason: string;
-  due_date: string | null;
+  due_date: string;
   status: FollowUpStatus;
   notes: string | null;
   created_at: string;

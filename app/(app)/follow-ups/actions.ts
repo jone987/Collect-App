@@ -37,7 +37,7 @@ export async function createFollowUp(
     user_id: user.id,
     customer_id: customerId,
     reason: parsed.data.reason,
-    due_date: parsed.data.due_date || null,
+    due_date: parsed.data.due_date,
     status: parsed.data.status,
     notes: parsed.data.notes || null,
   });

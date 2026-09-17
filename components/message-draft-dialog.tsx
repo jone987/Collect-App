@@ -20,8 +20,10 @@ import {
   isIOSDevice,
 } from "@/lib/contact-links";
 
-function describeDueStatus(hasDueDate: boolean, overdueDays: number): string {
-  if (!hasDueDate) return "no due date set";
+// Follow-ups always have a due date (enforced by the `due_date` NOT NULL
+// constraint and required form/schema validation), so this only ever
+// distinguishes "overdue" from "due today" — never a missing date.
+function describeDueStatus(overdueDays: number): string {
   if (overdueDays <= 0) return "due today";
   return `${overdueDays} day${overdueDays === 1 ? "" : "s"} overdue`;
 }
@@ -31,7 +33,7 @@ interface DraftMessageDialogProps {
   customerJob: string | null;
   amountOwed: number;
   contact: string | null;
-  dueDate: string | null;
+  dueDate: string;
 }
 
 export function DraftMessageDialog({
@@ -58,7 +60,7 @@ export function DraftMessageDialog({
     job: customerJob?.trim() || null,
     amount: formatCurrency(amountOwed),
     daysOverdue: overdueDays,
-    hasDueDate: dueDate !== null,
+    hasDueDate: true,
   };
 
   function applyTone(nextTone: MessageTone) {
@@ -102,10 +104,7 @@ export function DraftMessageDialog({
       <Dialog
         ref={dialogRef}
         title="Draft a message"
-        description={`For ${customerName} — ${describeDueStatus(
-          dueDate !== null,
-          overdueDays
-        )}`}
+        description={`For ${customerName} — ${describeDueStatus(overdueDays)}`}
       >
         <div className="space-y-4">
           <div className="grid grid-cols-3 gap-2">

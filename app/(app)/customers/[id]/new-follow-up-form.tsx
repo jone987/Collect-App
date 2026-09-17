@@ -43,12 +43,14 @@ export function NewFollowUpForm({ customerId }: { customerId: string }) {
       <Field
         label="Due date"
         htmlFor="due_date"
+        required
         error={errors.due_date?.[0]}
       >
         <Input
           id="due_date"
           name="due_date"
           type="date"
+          required
           invalid={!!errors.due_date}
         />
       </Field>
