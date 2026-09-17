@@ -7,9 +7,9 @@ import { Textarea } from "@/components/ui/field";
 import { formatCurrency, daysOverdue } from "@/lib/format";
 import {
   MESSAGE_TONES,
-  MESSAGE_TEMPLATES,
+  MESSAGE_TONE_META,
   selectTone,
-  renderMessageTemplate,
+  renderMessage,
   type MessageTone,
 } from "@/lib/message-templates";
 import {
@@ -19,6 +19,12 @@ import {
   extractPhone,
   isIOSDevice,
 } from "@/lib/contact-links";
+
+function describeDueStatus(hasDueDate: boolean, overdueDays: number): string {
+  if (!hasDueDate) return "no due date set";
+  if (overdueDays <= 0) return "due today";
+  return `${overdueDays} day${overdueDays === 1 ? "" : "s"} overdue`;
+}
 
 interface DraftMessageDialogProps {
   customerName: string;
@@ -47,22 +53,23 @@ export function DraftMessageDialog({
   useEffect(() => setIsIOS(isIOSDevice()), []);
 
   const overdueDays = daysOverdue(dueDate);
-  const mergeFields = {
+  const messageContext = {
     name: customerName,
-    job: customerJob?.trim() || "project",
+    job: customerJob?.trim() || null,
     amount: formatCurrency(amountOwed),
-    days_overdue: String(overdueDays),
+    daysOverdue: overdueDays,
+    hasDueDate: dueDate !== null,
   };
 
   function applyTone(nextTone: MessageTone) {
     setTone(nextTone);
-    setMessage(renderMessageTemplate(nextTone, mergeFields));
+    setMessage(renderMessage(nextTone, messageContext));
   }
 
   function handleOpen() {
     const defaultTone = selectTone(overdueDays);
     setTone(defaultTone);
-    setMessage(renderMessageTemplate(defaultTone, mergeFields));
+    setMessage(renderMessage(defaultTone, messageContext));
     setCopyState("idle");
     dialogRef.current?.open();
   }
@@ -95,11 +102,10 @@ export function DraftMessageDialog({
       <Dialog
         ref={dialogRef}
         title="Draft a message"
-        description={`For ${customerName} — ${
-          overdueDays > 0
-            ? `${overdueDays} day${overdueDays === 1 ? "" : "s"} overdue`
-            : "not yet overdue"
-        }`}
+        description={`For ${customerName} — ${describeDueStatus(
+          dueDate !== null,
+          overdueDays
+        )}`}
       >
         <div className="space-y-4">
           <div className="grid grid-cols-3 gap-2">
@@ -115,12 +121,12 @@ export function DraftMessageDialog({
                 }`}
               >
                 <span className="block font-medium">
-                  {MESSAGE_TEMPLATES[t].label}
+                  {MESSAGE_TONE_META[t].label}
                 </span>
                 <span
                   className={tone === t ? "text-gray-300" : "text-gray-400"}
                 >
-                  {MESSAGE_TEMPLATES[t].description}
+                  {MESSAGE_TONE_META[t].description}
                 </span>
               </button>
             ))}

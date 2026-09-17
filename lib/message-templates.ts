@@ -1,25 +1,13 @@
 export const MESSAGE_TONES = ["friendly", "firm", "formal"] as const;
 export type MessageTone = (typeof MESSAGE_TONES)[number];
 
-export const MESSAGE_TEMPLATES: Record<
+export const MESSAGE_TONE_META: Record<
   MessageTone,
-  { label: string; description: string; body: string }
+  { label: string; description: string }
 > = {
-  friendly: {
-    label: "Friendly",
-    description: "1–5 days overdue",
-    body: "Hi {name}, hope the {job} is looking great! Just a friendly reminder that the balance of {amount} is still outstanding. Could you let me know when I can get this settled, ideally by the end of the week? Happy to help if there's anything holding it up.",
-  },
-  firm: {
-    label: "Firm",
-    description: "6–13 days overdue",
-    body: "Hi {name}, this is a follow-up regarding the balance of {amount} for the {job} project, now {days_overdue} days past due. Could you let me know when we can expect this to be settled? Happy to help if anything's holding it up on your end. Thank you.",
-  },
-  formal: {
-    label: "Formal",
-    description: "14+ days overdue",
-    body: "Hi {name}, I'm reaching out again regarding the outstanding balance of {amount} for the {job}, now {days_overdue} days past due. This follows a couple of earlier reminders that haven't been answered yet. I'd like to get this resolved as soon as possible — could you let me know when I can expect payment, or reach out if there's something going on I should know about?",
-  },
+  friendly: { label: "Friendly", description: "1–5 days overdue" },
+  firm: { label: "Firm", description: "6–13 days overdue" },
+  formal: { label: "Formal", description: "14+ days overdue" },
 };
 
 /** Matches the brief: 1-5 days -> friendly, 6-13 -> firm, 14+ -> formal.
@@ -30,19 +18,64 @@ export function selectTone(daysOverdue: number): MessageTone {
   return "friendly";
 }
 
-export interface MessageMergeFields {
+export interface MessageContext {
   name: string;
-  job: string;
+  /** null when the customer has no job on file — the job-specific phrase
+   * is dropped entirely rather than filled with a placeholder like "project". */
+  job: string | null;
+  /** Pre-formatted, e.g. "$1,200.00". */
   amount: string;
-  days_overdue: string;
+  daysOverdue: number;
+  /** false when the follow-up has no due date at all — distinct from
+   * daysOverdue === 0, which means a due date exists and is today. */
+  hasDueDate: boolean;
 }
 
-export function renderMessageTemplate(
-  tone: MessageTone,
-  fields: MessageMergeFields
-): string {
-  return MESSAGE_TEMPLATES[tone].body.replace(
-    /\{(\w+)\}/g,
-    (match, key: string) => fields[key as keyof MessageMergeFields] ?? match
+/** ", now 8 days past due" / ", now 1 day past due" / ", due today" / ""
+ * (the last when there's no due date on file at all — never renders a
+ * bare "now days past due" with no number). */
+function dueDateClause(ctx: MessageContext): string {
+  if (!ctx.hasDueDate) return "";
+  if (ctx.daysOverdue <= 0) return ", due today";
+  const unit = ctx.daysOverdue === 1 ? "day" : "days";
+  return `, now ${ctx.daysOverdue} ${unit} past due`;
+}
+
+function buildFriendly(ctx: MessageContext): string {
+  const opening = ctx.job
+    ? `Hi ${ctx.name}, hope the ${ctx.job} is looking great! Just a friendly reminder`
+    : `Hi ${ctx.name}, just a friendly reminder`;
+  return (
+    `${opening} that the balance of ${ctx.amount} is still outstanding. ` +
+    "Could you let me know when I can get this settled, ideally by the end of the week? " +
+    "Happy to help if there's anything holding it up."
   );
+}
+
+function buildFirm(ctx: MessageContext): string {
+  const jobClause = ctx.job ? ` for the ${ctx.job} project` : "";
+  return (
+    `Hi ${ctx.name}, this is a follow-up regarding the balance of ${ctx.amount}${jobClause}${dueDateClause(ctx)}. ` +
+    "Could you let me know when we can expect this to be settled? " +
+    "Happy to help if anything's holding it up on your end. Thank you."
+  );
+}
+
+function buildFormal(ctx: MessageContext): string {
+  const jobClause = ctx.job ? ` for the ${ctx.job}` : "";
+  return (
+    `Hi ${ctx.name}, I'm reaching out again regarding the outstanding balance of ${ctx.amount}${jobClause}${dueDateClause(ctx)}. ` +
+    "This follows a couple of earlier reminders that haven't been answered yet. " +
+    "I'd like to get this resolved as soon as possible — could you let me know when I can expect payment, or reach out if there's something going on I should know about?"
+  );
+}
+
+const BUILDERS: Record<MessageTone, (ctx: MessageContext) => string> = {
+  friendly: buildFriendly,
+  firm: buildFirm,
+  formal: buildFormal,
+};
+
+export function renderMessage(tone: MessageTone, ctx: MessageContext): string {
+  return BUILDERS[tone](ctx);
 }
