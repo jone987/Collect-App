@@ -7,6 +7,10 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    // Excludes /api/* too: API routes (e.g. the cron endpoint) authorize
+    // themselves independently and must never be redirected to /login for
+    // lacking a browser session — a server-to-server request like Vercel
+    // Cron has no session at all, only its own bearer secret.
+    "/((?!_next/static|_next/image|favicon.ico|api/|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 };
