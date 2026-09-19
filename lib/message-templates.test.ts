@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { daysOverdue } from "./format";
-import { renderMessage, selectTone } from "./message-templates";
+import { MESSAGE_TONES, renderMessage, selectTone } from "./message-templates";
 
 describe("selectTone — exact tier boundaries", () => {
   it("1-5 days overdue -> friendly", () => {
@@ -92,5 +92,42 @@ describe("renderMessage — missing-field handling regression", () => {
     const oneDay = { ...base, daysOverdue: 1 };
     expect(renderMessage("firm", oneDay)).toContain("1 day past due");
     expect(renderMessage("firm", oneDay)).not.toContain("1 days past due");
+  });
+});
+
+describe("renderMessage — wording", () => {
+  const base = {
+    name: "Jordan Smith",
+    job: "Kitchen remodel",
+    amount: "$1,200.00",
+    daysOverdue: 8,
+    hasDueDate: true,
+  };
+
+  it("formal no longer claims prior reminders were sent", () => {
+    expect(renderMessage("formal", base)).not.toContain(
+      "This follows a couple of earlier reminders"
+    );
+  });
+
+  it("firm and formal ask for a timeframe, not an open-ended 'when'", () => {
+    expect(renderMessage("firm", base)).toContain(
+      "when we can expect this to be settled, ideally by the end of the week?"
+    );
+    expect(renderMessage("formal", base)).toContain(
+      "when I can expect payment, ideally by the end of the week,"
+    );
+  });
+
+  it("friendly already used this phrasing and keeps it unchanged", () => {
+    expect(renderMessage("friendly", base)).toContain(
+      "when I can get this settled, ideally by the end of the week?"
+    );
+  });
+
+  it("every tone ends with a bare 'Thanks,' on its own line, with no name filled in", () => {
+    for (const tone of MESSAGE_TONES) {
+      expect(renderMessage(tone, base).endsWith("\n\nThanks,")).toBe(true);
+    }
   });
 });

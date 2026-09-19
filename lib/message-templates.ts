@@ -56,7 +56,7 @@ function buildFirm(ctx: MessageContext): string {
   const jobClause = ctx.job ? ` for the ${ctx.job} project` : "";
   return (
     `Hi ${ctx.name}, this is a follow-up regarding the balance of ${ctx.amount}${jobClause}${dueDateClause(ctx)}. ` +
-    "Could you let me know when we can expect this to be settled? " +
+    "Could you let me know when we can expect this to be settled, ideally by the end of the week? " +
     "Happy to help if anything's holding it up on your end. Thank you."
   );
 }
@@ -65,8 +65,7 @@ function buildFormal(ctx: MessageContext): string {
   const jobClause = ctx.job ? ` for the ${ctx.job}` : "";
   return (
     `Hi ${ctx.name}, I'm reaching out again regarding the outstanding balance of ${ctx.amount}${jobClause}${dueDateClause(ctx)}. ` +
-    "This follows a couple of earlier reminders that haven't been answered yet. " +
-    "I'd like to get this resolved as soon as possible — could you let me know when I can expect payment, or reach out if there's something going on I should know about?"
+    "I'd like to get this resolved as soon as possible — could you let me know when I can expect payment, ideally by the end of the week, or reach out if there's something going on I should know about?"
   );
 }
 
@@ -76,6 +75,9 @@ const BUILDERS: Record<MessageTone, (ctx: MessageContext) => string> = {
   formal: buildFormal,
 };
 
+/** Every message ends with a bare "Thanks," on its own line so the sender
+ * can type their own name after it — there's no sender-name field in the
+ * app to fill this in automatically. */
 export function renderMessage(tone: MessageTone, ctx: MessageContext): string {
-  return BUILDERS[tone](ctx);
+  return `${BUILDERS[tone](ctx)}\n\nThanks,`;
 }
