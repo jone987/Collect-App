@@ -57,7 +57,7 @@ function buildFirm(ctx: MessageContext): string {
   return (
     `Hi ${ctx.name}, this is a follow-up regarding the balance of ${ctx.amount}${jobClause}${dueDateClause(ctx)}. ` +
     "Could you let me know when we can expect this to be settled, ideally by the end of the week? " +
-    "Happy to help if anything's holding it up on your end. Thank you."
+    "Happy to help if anything's holding it up on your end."
   );
 }
 
